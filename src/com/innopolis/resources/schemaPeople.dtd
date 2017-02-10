@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+        <!ELEMENT object (field*)>
+        <!ELEMENT field ANY>
+        <!ATTLIST object
+                type CDATA #REQUIRED>
+        <!ATTLIST field
+                type CDATA #REQUIRED
+                id CDATA #REQUIRED
+                value CDATA #REQUIRED>
