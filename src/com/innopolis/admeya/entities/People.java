@@ -1,4 +1,4 @@
-package com.innopolis;
+package com.innopolis.admeya.entities;
 
 /**
  * Created by Ирина on 10.02.2017.
@@ -6,7 +6,7 @@ package com.innopolis;
 public class People {
     private String name;
     private Integer age;
-    private double salary;
+    private Double salary;
 
     public String getName() {
         return name;
@@ -38,11 +38,21 @@ public class People {
         this.salary = salary;
     }
 
-    public People(){
+    public People() {
 
     }
 
-    protected void paySalary(){
+    protected void paySalary() {
         System.out.println("I have salary " + salary);
+    }
+
+
+    @Override
+    public String toString() {
+        return "People{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                ", salary=" + salary +
+                '}';
     }
 }
