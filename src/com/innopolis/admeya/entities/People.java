@@ -8,6 +8,7 @@ public class People {
     private Integer age;
     private Double salary;
 
+
     public String getName() {
         return name;
     }

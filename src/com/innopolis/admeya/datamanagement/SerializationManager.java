@@ -60,6 +60,9 @@ public class SerializationManager {
                         ob = people.newInstance();
                         System.out.println(ob);
                     }
+                    if (type.equals(StructureObject.ATTR_ID)) {
+                        identification(type, val);
+                    }
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 } catch (IllegalAccessException e) {
@@ -67,9 +70,21 @@ public class SerializationManager {
                 } catch (InstantiationException e) {
                     e.printStackTrace();
                 }
+            } else {
+                identification(type, val);
             }
-            identification(type, val, ob);
 
+
+//            People peop = null;
+//            if (ob.getClass().getSimpleName().equals("People")){
+//                peop = (People) ob;
+//            }
+//
+//            Method[] methods = peop.getClass().getMethods();
+//
+//            for (Method met: methods){
+//                met
+//            }
         }
 
         if (node instanceof Element) {
@@ -77,24 +92,14 @@ public class SerializationManager {
         }
     }
 
-    public void identification(String fieldName, String fieldValue, Object ob) {
-
-        Field[] fields = ob.getClass().getDeclaredFields();
-        for (Field field : fields) {
-            field.setAccessible(true);
-            if (fieldValue.equals(field.getName())) {
-                arHash.put(fieldValue, map);
-                strName = fieldValue;
-            } else {
-                if (fieldName.equals(StructureObject.ATTR_TYPE)) {
-                    strType = field.getType().getSimpleName();
-                } else if (fieldName.equals(StructureObject.ATTR_VALUE)) {
-                    try {
-                        strValue = field.get(ob).toString();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
+    public void identification(String fieldName, String fieldValue) {
+        if (fieldName.equals(StructureObject.ATTR_ID)) {
+            strName = fieldValue;
+        } else {
+            if (fieldName.equals(StructureObject.ATTR_TYPE)) {
+                strType = fieldValue;
+            } else if (fieldName.equals(StructureObject.ATTR_VALUE)) {
+                strValue = fieldValue;
             }
         }
     }
