@@ -1,7 +1,6 @@
-package com.innopolis;
+package com.innopolis.admeya;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.OutputStreamWriter;
@@ -15,14 +14,12 @@ public class SaxParser extends DefaultHandler {
     private PrintWriter out;
     private int elements;
     private int attributes;
-    private int characters;
-    private int ignorableWhitespace;
     private String xmlForParse;
 
     public SaxParser(String xmlForParse) {
         this.xmlForParse = xmlForParse;
         try {
-            out = new PrintWriter(new OutputStreamWriter(System.out, "koi8-r"));
+            out = new PrintWriter(new OutputStreamWriter(System.out, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e); // нет вывода - нет работы!
         }
@@ -32,10 +29,6 @@ public class SaxParser extends DefaultHandler {
         // Статистика
         elements = 0;
         attributes = 0;
-        characters = 0;
-        ignorableWhitespace = 0;
-        // Процессорные инструкции
-        out.println("");
     }
 
     public void startElement (String uri, String localName,
@@ -44,6 +37,7 @@ public class SaxParser extends DefaultHandler {
         if (attrs != null) {
             this.attributes += attrs.getLength();
         }
+
         // Печать тэга элемента вместе со списком его атрибутов,
         // например,
         out.print('<');
@@ -59,13 +53,14 @@ public class SaxParser extends DefaultHandler {
             }
         }
         out.println('>');
+
+//        if (qName.equals(StructureObject.ELEM_OBJECT)){
+//            //if (attrs.getQName())
+//        }
     }
 
-    // Текстовые символы
-    public void characters(char ch[], int start, int length) {
-        characters += length;
-        out.println(new String(ch, start, length));
-        System.out.println(new String(ch, start, length));
+    public void serialization(String qName, Attributes attrs) {
+        // if (qName.)
     }
 
     // Конец документа
@@ -78,7 +73,6 @@ public class SaxParser extends DefaultHandler {
         System.out.println("Документ " + xmlForParse + " был успешно обработан");
         System.out.println("Элементов : " + elements);
         System.out.println("Атрибутов : " + attributes);
-        System.out.println("Символов  : " + characters);
     }
 
 }

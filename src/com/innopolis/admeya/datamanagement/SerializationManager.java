@@ -2,6 +2,7 @@ package com.innopolis.admeya.datamanagement;
 
 import com.innopolis.admeya.dicts.StructureObject;
 import org.w3c.dom.*;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -12,19 +13,24 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
-
-import static com.innopolis.admeya.dicts.StructureObject.*;
 
 /**
  * Created by Ирина on 11.02.2017.
  */
 public class SerializationManager {
-    public static ArrayList<HashMap<String, String>> arList;
+    public static HashMap<String, HashMap<String, String>> arHash = new HashMap<String, HashMap<String, String>>();
+    static String strType;
+    static String strValue;
+    static String strName;
+    static HashMap<String, String> map = new HashMap<>();
+    static Object ob;
+
 
     public void visit(Node node) {
         NodeList list = node.getChildNodes();
@@ -47,7 +53,23 @@ public class SerializationManager {
             type = attr.item(i).getNodeName();
             val = attr.item(i).getNodeValue();
             System.out.println(" " + type + " = '" + val + "'");
-            identification(type, val);
+            if (i == 0) {
+                try {
+                    if (type.equals(StructureObject.ATTR_TYPE)) {
+                        Class people = Class.forName(val);
+                        ob = people.newInstance();
+                        System.out.println(ob);
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                }
+            }
+            identification(type, val, ob);
+
         }
 
         if (node instanceof Element) {
@@ -55,29 +77,42 @@ public class SerializationManager {
         }
     }
 
-    public void identification(String fieldName, String fieldValue) {
-        HashMap<String, String> map = new HashMap<>();
+    public void identification(String fieldName, String fieldValue, Object ob) {
 
-        switch (fieldName) {
-            case ATTR_ID:
-                map.put(ATTR_ID, fieldValue);
-            case ATTR_TYPE:
-                map.put(ATTR_TYPE, fieldValue);
-            case ATTR_VALUE:
-                map.put(ATTR_VALUE, fieldValue);
+        Field[] fields = ob.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            field.setAccessible(true);
+            if (fieldValue.equals(field.getName())) {
+                arHash.put(fieldValue, map);
+                strName = fieldValue;
+            } else {
+                if (fieldName.equals(StructureObject.ATTR_TYPE)) {
+                    strType = field.getType().getSimpleName();
+                } else if (fieldName.equals(StructureObject.ATTR_VALUE)) {
+                    try {
+                        strValue = field.get(ob).toString();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
-        arList.add(map);
     }
 
-    public void serialization(String xmlPath, Object obj) throws ParserConfigurationException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+    public void serialization(String xmlPath, Object obj) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
+        DocumentBuilder builder = null;
+        try {
+            builder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
         DOMImplementation impl = builder.getDOMImplementation();
 
         Class people = obj.getClass();
         Document doc = impl.createDocument(null, null, null); // doctype
         Element e1 = doc.createElement(StructureObject.ELEM_OBJECT);
-        e1.setAttribute(StructureObject.ATTR_TYPE, people.getSimpleName());
+        e1.setAttribute(StructureObject.ATTR_TYPE, people.getName()); //.getSimpleName()
         doc.appendChild(e1);
 
         Field[] fields = people.getDeclaredFields();
@@ -86,10 +121,15 @@ public class SerializationManager {
             field.setAccessible(true);
             e2.setAttribute(StructureObject.ATTR_TYPE, field.getType().getSimpleName());
             e2.setAttribute(StructureObject.ATTR_ID, field.getName());
-            e2.setAttribute(StructureObject.ATTR_VALUE, field.get(obj).toString());
+            try {
+                e2.setAttribute(StructureObject.ATTR_VALUE, field.get(obj).toString());
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
             e1.appendChild(e2);
         }
         writeObjectToXML(doc, xmlPath);
+        System.out.println("Serialization successful!!!\n");
     }
 
     void writeObjectToXML(Document doc, String xmlPath) {
@@ -108,6 +148,36 @@ public class SerializationManager {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public void deserialization(String xmlPath) {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance(); //создали фабрику строителей
+        DocumentBuilder parser = null; // создали конкретного строителя документа
+        try {
+            parser = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+        Document doc = null; // строитель построил документ
+        try {
+            doc = parser.parse(new File(xmlPath));
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //Document - тоже является нодом, и импленментирует методы
+
+        visit(doc);
+
+//        for (HashMap<String, String> urlValues : SerializationManager.arList) {
+//            for (Map.Entry objects : urlValues.entrySet()) {
+//                // People man = new People();
+//                System.out.println(objects.getKey() + " = " + objects.getValue() + "\n");
+//
+//
+//            }
+//        }
     }
 }
 
