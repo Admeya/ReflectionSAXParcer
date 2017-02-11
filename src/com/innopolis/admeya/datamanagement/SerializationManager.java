@@ -18,17 +18,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.HashMap;
 
 /**
  * Created by Ирина on 11.02.2017.
  */
 public class SerializationManager {
-    public static HashMap<String, HashMap<String, String>> arHash = new HashMap<String, HashMap<String, String>>();
     static String strType;
     static String strValue;
     static String strName;
-    static HashMap<String, String> map = new HashMap<>();
     static Object ob;
 
 
@@ -73,18 +70,7 @@ public class SerializationManager {
             } else {
                 identification(type, val);
             }
-
-
-//            People peop = null;
-//            if (ob.getClass().getSimpleName().equals("People")){
-//                peop = (People) ob;
-//            }
-//
-//            Method[] methods = peop.getClass().getMethods();
-//
-//            for (Method met: methods){
-//                met
-//            }
+            settingFields(ob);
         }
 
         if (node instanceof Element) {
@@ -104,7 +90,40 @@ public class SerializationManager {
         }
     }
 
+    public void settingFields(Object ob) {
+        if (strValue != null && strType != null && strName != null) {
+            Field f = null;
+            try {
+                f = ob.getClass().getDeclaredField(strName);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+            f.setAccessible(true);
+            try {
+                switch (strType) {
+                    case "Double":
+                        f.set(ob, (Double) Double.valueOf(strValue));
+                        break;
+                    case "Integer":
+                        f.set(ob, (Integer) Integer.valueOf(strValue));
+                        break;
+                    case "String":
+                        f.set(ob, strValue);
+                        break;
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            System.out.println(ob);
+
+            strValue = null;
+            strType = null;
+            strName = null;
+        }
+    }
+
     public void serialization(String xmlPath, Object obj) {
+        System.out.println("Serialization start......");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = null;
         try {
@@ -156,6 +175,7 @@ public class SerializationManager {
     }
 
     public void deserialization(String xmlPath) {
+        System.out.println("Deserialization start..........");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance(); //создали фабрику строителей
         DocumentBuilder parser = null; // создали конкретного строителя документа
         try {
@@ -172,17 +192,8 @@ public class SerializationManager {
             e.printStackTrace();
         }
         //Document - тоже является нодом, и импленментирует методы
-
         visit(doc);
-
-//        for (HashMap<String, String> urlValues : SerializationManager.arList) {
-//            for (Map.Entry objects : urlValues.entrySet()) {
-//                // People man = new People();
-//                System.out.println(objects.getKey() + " = " + objects.getValue() + "\n");
-//
-//
-//            }
-//        }
+        System.out.println("Deserialisation successful!!!");
     }
 }
 

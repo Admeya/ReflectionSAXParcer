@@ -1,4 +1,4 @@
-package com.innopolis.admeya;
+package com.innopolis.admeya.draft;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;

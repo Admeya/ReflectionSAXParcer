@@ -9,6 +9,7 @@ public class Main {
         String xmlPath = "resources/sourceFile.xml";
 
         People people = new People("John", 20, 20000.);
+
         SerializationManager helper = new SerializationManager();
         helper.serialization(xmlPath, people);
         helper.deserialization(xmlPath);
